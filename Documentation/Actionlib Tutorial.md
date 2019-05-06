@@ -129,6 +129,59 @@ Similarly, refer the following links for writing clients and servers in python.<
 ### Writing Simple Action Server in [Python](http://wiki.ros.org/actionlib_tutorials/Tutorials/Writing%20a%20Simple%20Action%20Server%20using%20the%20Execute%20Callback%20%28Python%29)
 ### Writing Simple Action Client in [Python](http://wiki.ros.org/actionlib_tutorials/Tutorials/Writing%20a%20Simple%20Action%20Client%20%28Python%29)
 
+## Writing a Simple Action Server using the Goal Callback Method [Tutorial](http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionServer%28GoalCallbackMethod%29) 
+
+Note : For geneating or compiling message files manually (not using catkin_make), run the foolowing in the terminal<br />
+>$ roscd package_name <br />
+>$ rosrun actionlib_msgs genaction.py -o msg/ action/(action file name).action
+
+In the server , we write a goal callback function to keep accepting the incomming goals from the client and store the received goals. Example :
+```sh
+ void goalCB()
+ {
+ // reset helper variables
+ data_count_ = 0;
+ sum_ = 0;
+ sum_sq_ = 0;
+ // accept the new goal
+ goal_ = as_.acceptNewGoal()->samples;
+ }
+```
+Here is the goalCB function referenced in the constructor. The callback function returns nothing and takes no arguments. When the goalCB is called the action needs to accept the goal and store any important information.<br />
+
+Then we write an analysis callback function that is called whenever a goal is received from the client. This function computes the required task and outputs the results and increments the feedback. Example :
+```sh
+  void analysisCB(const std_msgs::Float32::ConstPtr& msg)
+  {
+    // make sure that the action hasn't been canceled
+    if (!as_.isActive())
+      return;
+```
+Here the analysis callback takes the message format of the subscribed data channel and checks that the action is still in an active state before continuing to process the data. <br />
+
+Compiling and running the server is similar to the above mentioned process in Server with Executive CallBack.
+
+## Writing a Threaded Simple Action Client [Tutorial](http://wiki.ros.org/actionlib_tutorials/Tutorials/SimpleActionClient%28Threaded%29)
+
+Extra libraries to include :
+```sh
+#include <ros/ros.h>
+#include <actionlib/client/terminal_state.h>
+#include <boost/thread.hpp>
+```
+
+The client needs to be running and an external function can be written for that rather than in the main like :
+```sh 
+void spinThread()
+{
+  ros::spin();
+}
+```
+Refer the above tutorial link for an example client code and its working.<br/><br />
+
+Compiling and running the client is similar to the above process in simple action client.<br />
+
+## Running an Action Server and Client with Other Nodes [Tutorial](http://wiki.ros.org/actionlib_tutorials/Tutorials/RunningServerAndClientWithNodes)
 
 
 
