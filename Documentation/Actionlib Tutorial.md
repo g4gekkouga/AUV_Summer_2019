@@ -124,7 +124,10 @@ To run the server : (note that roscore i.e master should be running)
 
 >rosrun package_name client_name
 
+Similarly, refer the following links for writing clients and servers in python.<br />
 
+### Writing Simple Action Server in [Python](http://wiki.ros.org/actionlib_tutorials/Tutorials/Writing%20a%20Simple%20Action%20Server%20using%20the%20Execute%20Callback%20%28Python%29)
+### Writing Simple Action Client in [Python](http://wiki.ros.org/actionlib_tutorials/Tutorials/Writing%20a%20Simple%20Action%20Client%20%28Python%29)
 
 
 
