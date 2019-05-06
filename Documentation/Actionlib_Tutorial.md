@@ -183,6 +183,71 @@ Compiling and running the client is similar to the above process in simple actio
 
 ## Running an Action Server and Client with Other Nodes [Tutorial](http://wiki.ros.org/actionlib_tutorials/Tutorials/RunningServerAndClientWithNodes)
 
+Before Running the action server and client , we can create a Data Node which publishes the required data to a specific topic and then the server and the client can access that data. The following is an example of data node in python :
+
+```sh
+#!/usr/bin/env python
+
+import rospy
+from std_msgs.msg import Float32
+import random
+def gen_number():
+    pub = rospy.Publisher('random_number', Float32)
+    rospy.init_node('random_number_generator', log_level=rospy.INFO)
+    rospy.loginfo("Generating random numbers")
+
+    while not rospy.is_shutdown():
+        pub.publish(Float32(random.normalvariate(5, 1)))
+        rospy.sleep(0.05)
+
+if __name__ == '__main__':
+  try:
+    gen_number()
+  except Exception, e:
+    print "done"
+```
+Don't forget to make the node executable: 
+>chmod +x gen_numbers.py
+
+The above created data node publishes random numbers to the random_number topic which follow normal distribution with mean 5 and variance 1. Then the server and client can subscribe to topic random_number and access the produce data. Start the data node before accessing it.
+
+<br />
+
+## Writing a Callback Based SimpleActionClient [Tutorial](http://wiki.ros.org/actionlib_tutorials/Tutorials/Writing%20a%20Callback%20Based%20Simple%20Action%20Client)
+
+In some cases, blocking until a goal completes doesn't provide enough flexibility. Instead, event based execution might make more sense. We can use callbacks to avoid using a waitForResult() call to block for the goal to finish. 
+<br />
+Example :
+```sh
+void doneCb(const actionlib::SimpleClientGoalState& state,
+            const FibonacciResultConstPtr& result)
+{
+  ROS_INFO("Finished in state [%s]", state.toString().c_str());
+  ROS_INFO("Answer: %i", result->sequence.back());
+  ros::shutdown();
+}
+```
+This above method is executed once the goal is completed.
+
+```sh
+void activeCb()
+{
+  ROS_INFO("Goal just went active");
+}
+```
+The above method is called once the goal went active.<br /><br />
+
+But if we want to call the method every time a feedback is received, we can use a method based on callback every time feedback is received. Example:
+```sh
+void feedbackCb(const FibonacciFeedbackConstPtr& feedback)
+{
+  ROS_INFO("Got Feedback of length %lu", feedback->sequence.size());
+}
+```
+<br />
+If we want to use classes instead of methods, we will have to use boost library to wrap the classes. Refer the above tutorial link for example on usein classes.
+
+
 
 
 
