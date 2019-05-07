@@ -200,11 +200,26 @@ ActionState with a goal :
                       transitions={'succeeded':'state_on_success'})
 ``` 
 If we already userdate required for goal at different keys, the we can use goal_slots and assign it some keys and the remap them to the requires userdate. Example :
-```sh
->goal_slots=['max_effort','position']
+
+>goal_slots=['max_effort','position'] <br />
 >remapping={'max_effort':'user_data_max','position':'user_data_position'}
-```
+
 Note : Similar methods can be applied for feedback and results also.
+
+The state can also pass goal on callback from action. Refer the aboce tutorial link for sample goal callBack code.
+
+### Result to userdata
+
+You can write the result of the action directly to the userdata of your state.  <br />
+Example :
+>result_slots=['max_effort','position'] <br />
+>remapping={'max_effort':'user_data_max','position':'user_data_position'}
+
+Similar to goal callback, there can also be result callback methods in the state.
+
+
+
+
 
 
 
