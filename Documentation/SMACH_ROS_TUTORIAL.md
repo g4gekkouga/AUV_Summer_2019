@@ -107,7 +107,92 @@ Though we can write our own states and containers , smach comes with a lot of pr
 
 ## Passing User Data between States [(Tutorial)](http://wiki.ros.org/smach/Tutorials/User%20Data)
 
+### Specifying User Data :
+```sh
+  class Foo(smach.State):
+     def __init__(self, outcomes=['outcome1', 'outcome2'],
+                        input_keys=['foo_input'],
+                        output_keys=['foo_output'])
 
+     def execute(self, userdata):
+        # Do something with userdata
+        if userdata.foo_input == 1:
+            return 'outcome1'
+        else:
+            userdata.foo_output = 3
+            return 'outcome2'
+```
+The input_keys list enumerates all the inputs that a state needs to run. A state declares that it expect these fields to exist in the userdata. The execute method is provided a copy of the userdata struct. The state can read from all userdata fields that it enumerates in the input_keys list, but it can't write to any of these fields.
+<br />
+The output_keys list enumerates all the outputs that a state provides. The state can write to all fields in the userdata struct that are enumerated in the output_keys list. 
+<br />
+Note: If we want to run methods on userinput, we will have to mention it in useroutput also since inputkeys are immutable.
+
+### Connecting User Data
+
+```sh
+ sm_top = smach.StateMachine(outcomes=['outcome4','outcome5'],
+                          input_keys=['sm_input'],
+                          output_keys=['sm_output'])
+  with sm_top:
+     smach.StateMachine.add('FOO', Foo(),
+                            transitions={'outcome1':'BAR',
+                                         'outcome2':'outcome4'},
+                            remapping={'foo_input':'sm_input',
+                                       'foo_output':'sm_data'})
+     smach.StateMachine.add('BAR', Bar(),
+                            transitions={'outcome2':'FOO'},
+                            remapping={'bar_input':'sm_data',
+                                       'bar_output1':'sm_output'})
+ ```
+Here sm_data is used to map FOO output to BAR input.<br />
+Remapping is used to connect input and output keys of different nodes to each other defining input and output keys for the state machine.
+>So when you remap 'x':'y':
+>x needs to be an input_key or an output_key of the state.
+>y will automatically become part of the userdata of the state machine. 
+
+ ![alt text]( http://wiki.ros.org/smach/Tutorials/User%20Data?action=AttachFile&do=get&target=user_data.png "Above Mapping")
+ 
+## Create a Hierarchical State Machine [(Tutorial)](http://wiki.ros.org/smach/Tutorials/Create%20a%20hierarchical%20state%20machine)
+
+```sh
+# Create the top level SMACH state machine
+    sm_top = smach.StateMachine(outcomes=['outcome5'])
+
+    # Open the container
+    with sm_top:
+
+        # Create the sub SMACH state machine 
+        sm_sub = smach.StateMachine(outcomes=['outcome4'])
+
+        # Open the container 
+        with sm_sub:
+```
+This is how we create sub machines in a machine and create hierarchy among the machines.
+
+```sh
+smach.StateMachine.add('SUB', sm_sub, transitions={'outcome4':'outcome5'})
+```
+To add one statemachine to another.
+
+## Calling Actions from a State Machine [(Tutorial)](http://wiki.ros.org/smach/Tutorials/Calling%20Actions)
+
+Library to include :
+>from smach_ros import SimpleActionState
+The possible outcomes of the simple action state are 'succeeded', 'preempted' and 'aborted'.
+
+
+
+ 
+   
+   
+   
+   
+   
+   
+   
+   
+   
  
  
  
