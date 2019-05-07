@@ -70,6 +70,10 @@ rospy.spin()
 sis.stop()
 ```
 Then run the smach viewer
+<br />
+server_name: this name is used to create a namespace for the ROS introspection topics. You can name this anything you like, as long as this name is unique in your system. This name is not shown in the smach viewer.
+<br />
+SM_ROOT: your state machine will show up under this name in the smach viewer. So you can pretty much choose any name you like. If you have sub-state machines that are in different executables, you can make them show up as hierarchical state machines by choosing this name in a clever way: if the top level state machine is called 'SM_TOP', you can call the sub state machine 'SM_TOP/SM_SUB', and the viewer will recognize the sub state machine as being part of the top state machine. 
 
 ## Creating a State Machine [(Tutorial)](http://wiki.ros.org/smach/Tutorials/Getting%20Started)
 
