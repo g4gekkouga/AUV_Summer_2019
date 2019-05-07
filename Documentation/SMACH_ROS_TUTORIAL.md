@@ -71,3 +71,45 @@ sis.stop()
 ```
 Then run the smach viewer
 
+## Creating a State Machine [(Tutorial)](http://wiki.ros.org/smach/Tutorials/Getting%20Started)
+
+### Creating a State :
+The convention is to name states with all caps.
+```sh
+  class Foo(smach.State):
+     def __init__(self, outcomes=['outcome1', 'outcome2']):
+       # Your state initialization goes here
+
+     def execute(self, userdata):
+        # Your state execution goes here
+        if xxxx:
+            return 'outcome1'
+        else:
+            return 'outcome2'
+ ```
+ 
+ ### Adding states to a state machine :
+ ```sh
+  sm = smach.StateMachine(outcomes=['outcome4','outcome5'])
+  with sm:
+     smach.StateMachine.add('FOO', Foo(),
+                            transitions={'outcome1':'BAR',
+                                         'outcome2':'outcome4'})
+     smach.StateMachine.add('BAR', Bar(),
+                            transitions={'outcome2':'FOO'})
+```
+![alt text](http://wiki.ros.org/smach/Tutorials/Getting%20Started?action=AttachFile&do=get&target=simple.png "Graph Of Above Machine")
+##### Note : Every state machine container is also a state. So you can nest state machines by adding a state machine container to another state machine container. 
+
+Refer tha above link for an example of simple state machine example.
+<br />
+Though we can write our own states and containers , smach comes with a lot of predifines states and containers fo almost all situations as we will see further.
+
+## Passing User Data between States [(Tutorial)](http://wiki.ros.org/smach/Tutorials/User%20Data)
+
+
+ 
+ 
+ 
+ 
+
