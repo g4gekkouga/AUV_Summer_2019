@@ -181,10 +181,34 @@ Library to include :
 >from smach_ros import SimpleActionState
 The possible outcomes of the simple action state are 'succeeded', 'preempted' and 'aborted'.
 
+ActionState without any goal :
+
+```sh
+smach.StateMachine.add('State_name',
+                           SimpleActionState('action_server_namespace',
+                                             action_name),
+                           transitions={'succeeded':'state_on_success'})
+```
+ActionState with a goal :
+
+```sh
+    _goal = required_params
+    StateMachine.add('state_name',
+                      SimpleActionState('action_server_namespace',
+                                        action_name,
+                                        goal=_goal),
+                      transitions={'succeeded':'state_on_success'})
+``` 
+If we already userdate required for goal at different keys, the we can use goal_slots and assign it some keys and the remap them to the requires userdate. Example :
+```sh
+>goal_slots=['max_effort','position']
+>remapping={'max_effort':'user_data_max','position':'user_data_position'}
+```
+Note : Similar methods can be applied for feedback and results also.
 
 
- 
-   
+
+
    
    
    
