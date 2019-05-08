@@ -75,6 +75,8 @@ server_name: this name is used to create a namespace for the ROS introspection t
 <br />
 SM_ROOT: your state machine will show up under this name in the smach viewer. So you can pretty much choose any name you like. If you have sub-state machines that are in different executables, you can make them show up as hierarchical state machines by choosing this name in a clever way: if the top level state machine is called 'SM_TOP', you can call the sub state machine 'SM_TOP/SM_SUB', and the viewer will recognize the sub state machine as being part of the top state machine. 
 
+#### Note : Smach_Viewer doesnt run in ros kinetic version. Refer this document for making it work. [DOCUMENT](https://gist.github.com/matt3o/88bced95dba37a8932a51904d0734dff)
+
 ## Creating a State Machine [(Tutorial)](http://wiki.ros.org/smach/Tutorials/Getting%20Started)
 
 ### Creating a State :
@@ -288,6 +290,37 @@ sm = Concurrence(outcomes=['outcome1', 'outcome2'],
 
 The child_termination_cb is called every time one of the child states terminates. In the callback function you can decide if the state machine should keep running (return False), or if it should preempt all remaining running states (return True).<br />
 The outcome_cb is called once when the last child state terminates. This callback returns the outcome of the concurrence state machine. 
+
+## Sequence container [(Tutorial)](http://wiki.ros.org/smach/Tutorials/Sequence%20container)
+
+The Sequence container is a StateMachine container, extended with auto-generated transitions that create a sequence of states from the order in which said states are added to the container.
+<br />
+Example :
+```sh
+sq = Sequence(
+        outcomes = ['succeeded','aborted','preempted'],
+        connector_outcome = 'succeeded')
+with sq:
+    Sequence.add('MOVE_ARM_GRAB_PRE', MoveVerticalGripperPoseActionState())
+    Sequence.add('MOVE_GRIPPER_OPEN', MoveGripperState(GRIPPER_MAX_WIDTH))
+    Sequence.add('MOVE_ARM_GRAB',     MoveVerticalGripperPoseActionState())
+    Sequence.add('MOVE_GRIPPER_CLOSE', MoveGripperState(grab_width))
+    Sequence.add('MOVE_ARM_GRAB_POST', MoveVerticalGripperPoseActionState())
+```
+
+Note : Import the following library.
+>from smach import Sequence
+
+Each state added will receive an additional transition from it to the state which is added after it. The transition will follow the outcome specified at construction of this container.
+<br />
+If one of the transitions given in the dictionary mapping parameter to 'Sequence.add()' follows the connector outcome specified in the constructor, the provided transition will override the automatically generated connector transition.
+
+## Iterator container [(Tutorial)](http://wiki.ros.org/smach/Tutorials/Iterator%20container)
+
+The iterator allows you to loop through a state or states until success conditions are met. This tutorial demonstrates how to use an iterator to sort a list of numbers into evens and odds. 
+
+
+
 
 
 
