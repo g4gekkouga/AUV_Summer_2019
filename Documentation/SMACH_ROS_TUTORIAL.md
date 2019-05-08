@@ -103,6 +103,12 @@ The convention is to name states with all caps.
                             transitions={'outcome2':'FOO'})
 ```
 ![alt text](http://wiki.ros.org/smach/Tutorials/Getting%20Started?action=AttachFile&do=get&target=simple.png "Graph Of Above Machine")
+
+There are optional arguments to the static add method. The signature of the add method is: 
+```sh
+add(label, state, transitions=None, remapping=None) 
+```
+
 ##### Note : Every state machine container is also a state. So you can nest state machines by adding a state machine container to another state machine container. 
 
 Refer tha above link for an example of simple state machine example.
@@ -212,6 +218,10 @@ Note : Similar methods can be applied for feedback and results also.
 
 The state can also pass goal on callback from action. Refer the aboce tutorial link for sample goal callBack code.
 
+![alt text]( http://wiki.ros.org/smach/Tutorials/Simple%20Action%20State?action=AttachFile&do=get&target=actionstate.png "Simple Action State")
+
+[Simple Action Server](http://wiki.ros.org/smach/Tutorials/Simple%20Action%20State)
+
 ### Result to userdata
 
 You can write the result of the action directly to the userdata of your state.  <br />
@@ -220,6 +230,64 @@ Example :
 >remapping={'max_effort':'user_data_max','position':'user_data_position'}
 
 Similar to goal callback, there can also be result callback methods in the state.
+
+## Concurrent State Machine [(Link)](http://wiki.ros.org/smach/Tutorials/Concurrent%20States)
+
+This is used to run 2 states parallely or simultaneously. <br />
+Example :
+```sh
+# Create the sub SMACH state machine
+        sm_con = smach.Concurrence(outcomes=['outcome4','outcome5'],
+                                   default_outcome='outcome4',
+                                   outcome_map={'outcome5':
+                                       { 'FOO':'outcome2',
+                                         'BAR':'outcome1'}})
+
+        # Open the container
+        with sm_con:
+            # Add states to the container
+            smach.Concurrence.add('FOO', Foo())
+            smach.Concurrence.add('BAR', Bar())
+
+        smach.StateMachine.add('CON', sm_con,
+                               transitions={'outcome4':'CON',
+                                            'outcome5':'outcome6'})
+```
+![alt text]( http://wiki.ros.org/smach/Tutorials/Concurrent%20States?action=AttachFile&do=get&target=concurrence2.png "Concurrent Machine")
+
+Once all the states in the concurrence have terminated, if one of these child-outcome mappings is satisfied, the concurrence will return its associated outcome.<br />If none of the mappings are satisfied, the concurrence will return its default outcome.
+
+### Using Callbacks : [(Link)](http://wiki.ros.org/smach/Tutorials/Concurrence%20container)
+
+If you want full control over a concurrence state machine, you can use the callbacks it provides, the child_termination_cb and the outcome_cb: 
+
+```sh
+# gets called when ANY child state terminates
+def child_term_cb(outcome_map):
+
+  # terminate all running states if FOO finished with outcome 'outcome3'
+  if outcome_map['FOO'] == 'outcome3':
+    return True
+    
+  return False
+  
+# gets called when ALL child states are terminated
+def out_cb(outcome_map):
+   if outcome_map['FOO'] == 'succeeded':
+      return 'outcome1'
+   else:
+      return 'outcome2'
+      
+sm = Concurrence(outcomes=['outcome1', 'outcome2'],
+                 default_outcome='outcome1',
+                 input_keys=['sm_input'],
+                 output_keys=['sm_output'],
+                 child_termination_cb = child_term_cb,
+                 outcome_cb = out_cb)
+```
+
+The child_termination_cb is called every time one of the child states terminates. In the callback function you can decide if the state machine should keep running (return False), or if it should preempt all remaining running states (return True).<br />
+The outcome_cb is called once when the last child state terminates. This callback returns the outcome of the concurrence state machine. 
 
 
 
