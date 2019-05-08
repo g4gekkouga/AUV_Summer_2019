@@ -319,6 +319,71 @@ If one of the transitions given in the dictionary mapping parameter to 'Sequence
 
 The iterator allows you to loop through a state or states until success conditions are met. This tutorial demonstrates how to use an iterator to sort a list of numbers into evens and odds. 
 
+Note : Import the following library.
+>from smach import Iterator
+
+```sh
+__init__(self, outcomes, input_keys, output_keys, it=[], it_label='it_data', exhausted_outcome='exhausted')
+```
+
+In this example, the outcomes now include preempted, a default outcome of the iterator. The it argument is the list of objects that will be iterated over and the it_label is key that holds the current value of the of the item in the it list. The exhausted argument should be set to the preferred state machine outcome, in this example the iterator outcome is succeeded when the iterator is done looping through the it list.<br />
+Example :
+```sh
+    tutorial_it = Iterator(outcomes = ['succeeded','preempted','aborted'],
+                               input_keys = ['nums', 'even_nums', 'odd_nums'],
+                               it = lambda: range(0, len(sm.userdata.nums)),
+                               output_keys = ['even_nums', 'odd_nums'],
+                               it_label = 'index',
+                               exhausted_outcome = 'succeeded')
+```
+
+Example : <br />
+![alt text](http://wiki.ros.org/smach/Tutorials/Iterator%20container?action=AttachFile&do=get&target=smach_tutorial.png "Example of an iterator container")
+
+## Wrapping a Container With actionlib [(Tutorial)](http://wiki.ros.org/smach/Tutorials/Wrapping%20a%20SMACH%20Container%20With%20actionlib)
+
+```sh
+# Construct action server wrapper
+asw = ActionServerWrapper(
+    'my_action_server_name', MyAction,
+    wrapped_container = sm,
+    succeeded_outcomes = ['did_something','did_something_else'],
+    aborted_outcomes = ['aborted'],
+    preempted_outcomes = ['preempted'] 
+    goal_key = 'my_awesome_goal',
+    result_key = 'egad_its_a_result'
+    )
+```
+The above is the general code for wrapping a state machine with Action Wrapper and to call the goal and result.
+<br />
+The keyword arguments goal_key and result_key are the SMACH userdata keys in the context of the ActionServerWrapper. 
+<br />
+In order to copy in the keys form the parent, you can replace the construction call for the state machine sm with this: 
+```sh
+# Construct state machine
+sm = StateMachine(
+        outcomes=['did_something','did_something_else','aborted','preempted'],
+        input_keys = ['my_awesome_goal'],
+        output_keys = ['egad_its_a_result'])
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
