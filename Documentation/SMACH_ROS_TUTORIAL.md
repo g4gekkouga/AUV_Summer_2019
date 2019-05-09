@@ -380,8 +380,117 @@ StateMachine.add('MY_CB', CBState(my_cb,
                               {'foo':'OTHER_STATE'})
 ```
 
+## Monitor State : [(Tutorial)](http://wiki.ros.org/smach/Tutorials/MonitorState)
+
+Used if have to move frm one state to another by accessig the value published to a specific topic.
+
+Example :
+```sh
+    sm = smach.StateMachine(outcomes=['DONE'])
+    with sm:
+        smach.StateMachine.add('FOO', 
+                               smach_ros.MonitorState("/sm_reset", 
+                                                      Empty, 
+                                                      monitor_cb), 
+                               transitions={'invalid':'BAR', 
+                                            'valid':'FOO', 
+                                            'preempted':'FOO'})
+```
+Note that your MonitorState needs to define transitions for all three possible outcomes ('valid', 'invalid', 'preempted'). 
+
+## State Preemption Implementation :
+
+Sometimes, no state or container type will not satisfy your needs. Before you decide this, make sure you have examined all the provided state and container types. There are three key features that need to be considered when defining a new type of SMACH state:
+
+    Interface declaration
+    Execution implementation
+    Preemption implementation 
+    
+#### SMACH Interface
+
+SMACH containers interact with their contained states through state outcomes and userdata keys. The outcomes need to be declared in order to be able to be bound to targets in a container, and the userdata keys need to be declared in order to trace the dataflow in the system. This explicit declaration allows us to catch errors on construction of a SMACH tree instead as well as while we're executing it.
+
+#### Execution Implementation
+
+When a state is entered by the execution of some container, its execute() method is called. This is a method that blocks and returns some (registered) outcome identifier (string). Once this method exits, the state should be considered dormant, or inactive.
+
+If a certain state corresponds to a long-running task, it should be brought up in a concurrence or some other parallel container, instead of spinning off a thread and exiting quickly.
+
+#### Preemption Implementation
+
+In simple cases like the example above, preemption can be done simply by checking the method preempt_requested(). If this cannot be done, the request_preempt() method can be overloaded in this new state class. Preempts will usually come in on a separate thread, and this method should not block longer than it takes to notify any child threads / processes to preempt. 
+
+### Refer this link for State Machine Preemption.[LINK](http://wiki.ros.org/smach/Tutorials/State%20Machine%20Preemption%20with%20MonitorState)
 
 
+## Writing Custom State Classes with User-defined Callbacks [(Tutorial)](http://wiki.ros.org/mysmach/Tutorials/Writing%20Custom%20State%20Classes%20With%20User-defined%20Callbacks)
+
+Sometimes you want to create a state class like smach.SimpleActionState which receives user callbacks as arguments. If these callbacks change the SMACH interface of a state (outcomes, userdata keys), then the callbacks need to be annotated with this information. <br />
+
+SMACH provides a decorator which can attach a SMACH interface to a function. This includes user data input keys, output keys, and state outcomes. A common pattern for extensible state design is to use callback functions that are called on various events. For example, SimpleActionState can call callbacks for generating goal messages or processing result messages, and MonitorState calls a callback each time a message comes in on a specified topic.
+<br />
+If a state defines an interface that can take callback functions, it should support this decorator model. Doing so is as simple as checking for the existence of the SMACH interface methods. A single function is provided bu the smach.util module. 
+
+#### Single User Callback 
+Example :
+```sh
+class MyState(smach.State):
+    def __init__(self, cb):
+        smach.State.__init__(self, outcomes=['done'])
+
+        self._cb = cb
+        if cb and smach.has_smach_interface(cb):
+            self.register_input_keys(cb.get_registered_input_keys())
+            self.register_output_keys(cb.get_registered_output_keys())
+            self.register_outcomes(cb.get_registered_outcomes())
+    ...
+    def execute(self, ud):
+        # Call callback
+        cb_outcome = self._cb(ud)
+
+        # If callback returned an outcome, return it as the state outcome
+        if cb_outcome:
+            return cb_outcome 
+        
+        return 'done'
+```
+
+#### Multiple User Callbacks
+
+Example :
+```sh
+class MyState(smach.State):
+    def __init__(self, cb_list):
+        smach.State.__init__(self, outcomes=['done'])
+
+        self._cbs = cb_list
+        for cb in cb_list:
+            if cb and smach.has_smach_interface(cb):
+                self._cb_input_keys.append(cb.get_registered_input_keys())
+                self._cb_output_keys.append(cb.get_registered_output_keys())
+ 
+                self.register_input_keys(self._cb_input_keys[-1])
+                self.register_output_keys(self._cb_output_keys[-1])
+                self.register_outcomes(self._cb_input_keys[-1])
+    ...
+    def execute(self, ud):
+        # Call callbacks
+        for (cb, ik, ok) in zip(self._cbs,
+                                self._cb_input_keys,
+                                self._cb_output_keys):
+
+            # Call callback with limited userdata
+            cb_outcome = self._cb(smach.Remapper(ud,ik,ok,{}))
+
+            # If callback returned an outcome, return it as the state outcome
+            if cb_outcome:
+                return cb_outcome 
+        
+        return 'done'
+```
+
+If more than one callback is supplied, the state class implementer should ensure that no side-effects are caused by adding callbacks with different interfaces. This is done by using a userdata remapper when passing userdata to the callbacks.
+<br />
 
 
 
