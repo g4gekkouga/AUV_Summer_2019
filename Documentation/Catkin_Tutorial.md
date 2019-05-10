@@ -97,7 +97,19 @@ The above is an example of the package file without any comments and tags.
 
 ## Overlaying with catkin workspaces [(Tutorial)](https://www.hackerrank.com/domains/tutorials/30-days-of-code?filters%5Bstatus%5D%5B%5D=unsolved&badge_type=30-days-of-code)
 
+Overlaying refers to building and using a ROS package from source on top of an existing version of that same package. In this way your new or modified version of the package "overlays" the installed one. 
 
+#### wstool : [(Link)](http://wiki.ros.org/wstool)
+
+To install , try any one of the following commands :
+> $ sudo apt-get install python-wstool <br />
+>$ sudo pip install -U wstool <br />
+
+It includes command-line tools for maintaining a workspace of projects from multiple version-control systems.
+ <br />
+ 
+ 
+  
 
 
 
