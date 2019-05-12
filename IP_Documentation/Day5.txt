@@ -1,0 +1,271 @@
+DOCUMENTATION-----------P AMSHUMAAN VARMA--------DAY 5--------IP PHASE 1-------
+
+1)CallBack Function to detect Mouse Clicks.
+  Syntax of the calling function,
+  Syntax of the CallBack functions.
+  Different parametes and arguments.
+
+  Implementation for colouring blobs using BFS from the Point Clicked at.
+
+ ----------------------------CODE------------------------------------------------
+
+ #include "opencv2/core/core.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include <iostream>
+#include <string>
+#include <queue>
+
+using namespace std;
+using namespace cv;
+
+
+typedef struct pt_{
+	int x,y;
+}pt;
+
+Mat image = imread("/home/amshumaan/OpenCV/images/dfs_path.jpg",0);
+Mat img(image.rows,image.cols,CV_8UC1,Scalar(0));
+
+int r=image.rows;
+int c=image.cols;
+
+String windowName;
+
+void Paint(int event, int x, int y, int flag, void* ) {
+		if (event==1) {
+			if (image.at<uchar>(y,x)<200) {
+				int i,j,k,l,id=1;
+				vector<vector<int> > pixel_ID(r,vector<int>(c,-1)); //Stores ID of a pixel; -1 means unvisited
+				queue<pt> open_list;
+
+				pt start = {x,y};
+
+				open_list.push(start);
+
+				while(!open_list.empty()){
+					pt top = open_list.front();
+					open_list.pop();
+					img.at<uchar>(top.y,top.x)=127;
+					pixel_ID[top.y][top.x] = id;
+
+					for(k=top.y-1;k<=top.y+1;k++){
+						for(l=top.x-1;l<=top.x+1;l++){
+							if (l>=0 && k>=0 && k<img.rows && l<img.cols) {
+								
+								if(img.at<uchar>(k,l)>200||pixel_ID[k][l]>-1) continue;
+
+
+								pt next = {l,k};
+								pixel_ID[k][l] = id;
+								open_list.push(next);
+							}
+						}
+					}
+				}
+
+				
+    			imshow(windowName,img);
+
+			}
+		}
+		return;
+
+}
+
+int main(){
+
+	int i=0,j=0;
+
+	img=image.clone();
+
+	windowName="ClickToPaint";
+	namedWindow(windowName,WINDOW_NORMAL);
+
+	setMouseCallback(windowName,Paint,NULL);
+
+	imshow(windowName,img);
+
+	waitKey(0);
+
+	destroyAllWindows();
+
+
+    return 0; 
+
+
+}
+
+-------------------------------------------------------------------------------
+
+2) HSV ---New Colour Space
+   H S V values from R G B values
+   HSV values representation as a 3-d cylinder
+
+-------------------------------------------------------------------------------
+
+3) Contours Introduction
+	Detecting and Printing Contours using in-built functions 
+	 findContours() 
+	 drawContours().
+	 Hierarchy of Contours
+
+Eg)-------------------------------CODE---------------------------------------
+#include "opencv2/core/core.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include <iostream>
+#include <string>
+
+
+using namespace std;
+using namespace cv;
+
+Mat src_gray;
+int thresh = 100;
+RNG rng(12345);
+
+
+void thresh_callback(int, void* );
+
+
+int main( int argc, char** argv )
+{
+   
+    Mat src = imread("/home/amshumaan/OpenCV/images/op.jpg",1);
+    if( src.empty() )
+    {
+      cout << "Could not open or find the image!\n" << endl;
+      cout << "Usage: " << argv[0] << " <Input image>" << endl;
+      return -1;
+    }
+
+    cvtColor( src, src_gray, COLOR_BGR2GRAY );
+    blur( src_gray, src_gray, Size(3,3) );
+
+   
+    const char* source_window = "Source";
+    namedWindow( source_window ,WINDOW_NORMAL);
+    imshow( source_window, src );
+
+    const int max_thresh = 255;
+    createTrackbar( "Canny thresh:", source_window, &thresh, max_thresh, thresh_callback );
+    thresh_callback( 0, 0 );
+
+    waitKey();
+    return 0;
+}
+
+
+void thresh_callback(int, void* )
+{
+   
+    Mat canny_output;
+    Canny( src_gray, canny_output, thresh, thresh*2 );
+
+   
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+    findContours( canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE );
+
+   
+    Mat drawing = Mat::zeros( canny_output.size(), CV_8UC3 );
+    for( size_t i = 0; i< contours.size(); i++ )
+    {
+        Scalar color = Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
+        drawContours( drawing, contours, (int)i, color, 2, LINE_8, hierarchy, 0 );
+    }
+
+    imshow( "Contours", drawing );
+}
+-----------------------------------------------------------------------------------
+
+4)Template Detection in a Image
+	Different Math Functions to Store the Index Value at each index to find
+	max or min to find best match
+ Using In-built functions to traverse the template on image and to store values at each indes and to calculate maximum ar minimum from the Value Matrix
+         matchTemplate()
+         minMaxLoc()
+
+Eg)--------------------------------------_CODE------------------------------------
+
+
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
+#include <iostream>
+
+using namespace std;
+using namespace cv;
+
+bool use_mask;
+Mat img; Mat templ; Mat mask; Mat result;
+const char* image_window = "Source Image";
+const char* result_window = "Result window";
+
+int match_method;
+int max_Trackbar = 5;
+
+void MatchingTemplate();
+
+
+int main( int argc, char** argv )
+{
+
+  img = imread("/home/amshumaan/OpenCV/images/coins.jpg",1);
+  templ = imread("/home/amshumaan/OpenCV/images/coins1.jpg",1);
+
+  if(argc > 3) {
+    use_mask = true;
+    mask = imread( argv[3], IMREAD_COLOR );
+  }
+
+  if(img.empty() || templ.empty() || (use_mask && mask.empty()))
+  {
+    cout << "Can't read one of the images" << endl;
+    return -1;
+  }
+
+  namedWindow( image_window, WINDOW_AUTOSIZE );
+  namedWindow( result_window, WINDOW_AUTOSIZE );
+ 
+  
+  MatchingTemplate();
+
+  waitKey(0);
+
+}
+
+void MatchingTemplate()
+{
+
+  Mat img_display;
+  img.copyTo( img_display );
+  
+  int result_cols =  img.cols - templ.cols + 1;
+  int result_rows = img.rows - templ.rows + 1;
+
+  result.create( result_rows, result_cols, CV_32FC1 );
+ 
+
+ matchTemplate( img, templ, result, 5;
+
+  normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
+
+ double maxVal;  Point maxLoc;
+Point matchLoc;
+
+  minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+ 
+   matchLoc = maxLoc;
+
+  rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+  rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+
+  imshow( image_window, img_display );
+  imshow( result_window, result );
+
+
+  return;
+}
+------------------------------------END------------------------------------------------

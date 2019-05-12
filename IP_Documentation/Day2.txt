@@ -1,0 +1,604 @@
+Documentation-----------DAY 2------------------- P AMSHUMAAN VARMA-------IP PHASE 1-------------
+
+1)Mirror and Water Images Of a Given Image
+
+Eg)-----code----------
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+int main(int argc, char** argv)
+{
+ Mat image = imread("IMAGE PATH",1);
+
+ // Check for failure
+ if (image.empty()) 
+ {
+  cout << "Could not open or find the image" << endl;
+  cin.get(); //wait for any key press
+  return -1;
+ }
+
+int i=0;
+int j=0;
+
+  Mat image1(image.rows,2*image.cols,CV_8UC3, Scalar(0,0,0));
+
+  for (j=0;j<image.cols;j++) {
+  		for (i=0;i<image.rows;i++) {
+  			image1.at<Vec3b>(i,j)=image.at<Vec3b>(i,j);
+ 		}
+  }
+
+  for (j=image.cols;j<2*image.cols;j++) {
+  		for (i=0;i<image.rows;i++) {
+  			image1.at<Vec3b>(i,j)=image.at<Vec3b>(i,2*image.cols-j-1);
+ 		}
+  } 
+
+ Mat image2(2*image1.rows,image1.cols,CV_8UC3, Scalar(0,0,0));
+
+ for (i=0;i<image1.rows;i++) {
+      for (j=0;j<image1.cols;j++) {
+        image2.at<Vec3b>(i,j)=image1.at<Vec3b>(i,j);
+    }
+  } 
+
+   for (i=image1.rows;i<2*image1.rows;i++) {
+      for (j=0;j<image1.cols;j++) {
+        image2.at<Vec3b>(i,j)=image1.at<Vec3b>(2*image1.rows-1-i,j);
+    }
+  } 
+
+
+String windowName = "Mirror Image"; //Name of the window
+
+ namedWindow(windowName,WINDOW_NORMAL); // Create a window
+
+ imshow(windowName, image2); // Show our image inside the created window.
+
+ waitKey(0); // Wait for any keystroke in the window
+
+ destroyWindow(windowName); //destroy the created window
+
+ return 0;
+}
+-----------------------------------------------------------------------------------
+
+2)Converting Colour Image To GrayScale using
+   Mean , Max-Min , GaussionMethod
+
+Eg)-------------------CODE--------------------------------------------------------
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+int main(int argc, char** argv)
+{
+ Mat image = imread("IMAGE PATH",1);
+
+ // Check for failure
+ if (image.empty()) 
+ {
+  cout << "Could not open or find the image" << endl;
+  cin.get(); //wait for any key press
+  return -1;
+ }
+
+
+
+ Mat image1(image.rows,image.cols,CV_8UC1, Scalar(0));
+ Mat image2(image.rows,image.cols,CV_8UC1, Scalar(0));
+ Mat image3(image.rows,image.cols,CV_8UC1, Scalar(0));
+
+int i=0,j=0;
+ 
+ for (i=0;i<image.rows;i++) {
+ 		for (j=0;j<image.cols;j++) {
+ 				image1.at<uchar>(i,j)=(image.at<Vec3b>(i,j)[0]+image.at<Vec3b>(i,j)[1]+image.at<Vec3b>(i,j)[2])/3;
+ 		}
+ }
+
+for (i=0;i<image.rows;i++) {
+ 		for (j=0;j<image.cols;j++) {
+ 				image3.at<uchar>(i,j)=0.21*image.at<Vec3b>(i,j)[2]+0.72*image.at<Vec3b>(i,j)[1]+0.07*image.at<Vec3b>(i,j)[0];
+ 		}
+ }
+
+uchar max,min;
+
+   for (i=0;i<image.rows;i++) {
+ 		for (j=0;j<image.cols;j++) {
+ 			if (image.at<Vec3b>(i,j)[0]>=image.at<Vec3b>(i,j)[1]) {
+ 					max=image.at<Vec3b>(i,j)[0];
+ 					min=image.at<Vec3b>(i,j)[1];
+ 				}
+ 			else {
+ 				max=image.at<Vec3b>(i,j)[1];
+ 				min=image.at<Vec3b>(i,j)[0];
+ 			}
+
+ 			if (max<image.at<Vec3b>(i,j)[2]) max=image.at<Vec3b>(i,j)[2];
+ 			if (min>image.at<Vec3b>(i,j)[2]) min=image.at<Vec3b>(i,j)[2];
+
+ 			image2.at<uchar>(i,j)=(max+min)/2;
+ 		}
+ }
+
+
+String windowName = "1"; //Name of the window
+
+ namedWindow(windowName,WINDOW_NORMAL); // Create a window
+
+ imshow(windowName, image1); // Show our image inside the created window.
+
+ waitKey(0); // Wait for any keystroke in the window
+
+ imshow(windowName, image2); // Show our image inside the created window.
+
+ waitKey(0); // Wait for any keystroke in the window
+
+ imshow(windowName, image3); // Show our image inside the created window.
+
+ waitKey(0); // Wait for any keystroke in the window
+
+ destroyWindow(windowName); //destroy the created window
+
+ return 0;
+}
+
+----------------------------------------------------------------------------------
+
+3)Creating a Track-Bar for Threshold  Valus for R G B for filtering Required Image Set havind specified RGB Values
+
+Eg)----------------------------CODE-------------------------------------------
+
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+Mat img=imread("Image Path",1);
+
+Mat	img1(img.rows,img.cols,CV_8UC3, Scalar(0,0,0));
+
+int thrl;
+int thru;
+int thgl;
+int thgu;
+int thbl;
+int thbu;
+
+String windowName;
+
+void tkbfn(int , void*) {
+		int i=0,j=0;
+		for (i=0;i<img.rows;i++) {
+				for(j=0;j<img.cols;j++) {
+						if ((img.at<Vec3b>(i,j)[2]<thrl || img.at<Vec3b>(i,j)[2]>thru) || (img.at<Vec3b>(i,j)[1]<thgl || img.at<Vec3b>(i,j)[1]>thgu) || (img.at<Vec3b>(i,j)[0]<thbl || img.at<Vec3b>(i,j)[0]>thbu)) {
+								img1.at<Vec3b>(i,j)[2]=255;
+								img1.at<Vec3b>(i,j)[1]=255;
+								img1.at<Vec3b>(i,j)[0]=255;
+						}
+						else {
+								img1.at<Vec3b>(i,j)[2]=0;
+								img1.at<Vec3b>(i,j)[1]=0;
+								img1.at<Vec3b>(i,j)[0]=0;
+
+						}
+				}
+		}
+
+
+		imshow(windowName,img1);
+		imshow("Original",img);
+
+		return;
+}
+
+int main(int argc, char** argv) {
+
+
+ if (img.empty()) {
+  	cout << "Could not open or find the image" << endl;
+  	cin.get(); //wait for any key press
+  	return -1;
+ }
+
+	windowName = "TrackBar"; //Name of the window
+
+ 	namedWindow(windowName,WINDOW_NORMAL);
+ 	namedWindow("Original",WINDOW_NORMAL); // Create a window
+
+ 	createTrackbar( "RedU", windowName , &thru , 255 , tkbfn );
+ 	createTrackbar( "RedL", windowName , &thrl , 255 , tkbfn );
+ 	createTrackbar( "GreenU", windowName , &thgu , 255 , tkbfn );
+ 	createTrackbar( "GreenL", windowName , &thgl , 255 , tkbfn );
+ 	createTrackbar( "BlueU", windowName , &thbu , 255 , tkbfn );
+ 	createTrackbar( "BlueL", windowName , &thbl , 255 , tkbfn );
+
+	waitKey(0); // Wait for any keystroke in the window
+
+ 	destroyWindow(windowName); //destroy the created window
+
+ return 0;
+}
+-------------------------------------------------------------------------
+
+4)How to Make an image blurred---using Mean-Blur and Gaussian Blur
+
+Eg)-------------------------CODE-----------------------------------------
+
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+Mat img=imread("Image Path",1);
+Mat    img1(img.rows,img.cols,CV_8UC1, Scalar(255));
+
+int main()
+{
+    String windowName;
+    String windowN;
+
+    int i,j,a,b,n,x;
+    x=0;
+    n=0;
+        for(i=0;i<img.rows;i++)
+    {
+        for(j=0;j<img.cols;j++)
+        {
+            for(a=(i-1);a<=(i+1);a++)
+            {
+                for(b=(j-1);b<=(j+1);b++)
+                {
+                    if(a>=0 && b>=0 && a<img.rows && b<img.cols)
+                    {
+                        n = n + img.at<uchar>(a,b);
+                        x = x + 1;
+                    }
+                }
+            }
+            img1.at<uchar>(i,j)=n/x;
+            x = 0;
+            n = 0;
+        }
+    }
+    windowName = "Blur";
+    windowN = "bw";   
+    namedWindow(windowName,WINDOW_NORMAL);
+    namedWindow(windowN,WINDOW_NORMAL);
+    imshow(windowName,img1);
+    imshow(windowN,img);   
+    waitKey(0);
+    destroyWindow(windowName);
+    return 0;
+}
+
+-----------------------------------------------------------------------
+
+5)Contrast and Brightness of a Image ...c*pixel + b
+Input c and b using trackBar
+
+Eg)-------------------------CODE---------------------------------------
+
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+Mat img=imread("Image Path",1);
+
+Mat	img1(img.rows,img.cols,CV_8UC3, Scalar(0,0,0));
+
+int a;
+int b;
+
+String windowName;
+
+void tkbfn(int , void*) {
+		    for( int y = 0; y < img.rows; y++ ) {
+        		for( int x = 0; x < img.cols; x++ ) {
+		            for( int c = 0; c < img.channels(); c++ ) {
+		                img1.at<Vec3b>(y,x)[c] =
+		                  saturate_cast<uchar>( ((double)a/10)*img.at<Vec3b>(y,x)[c] + b );
+            }
+        }
+    }
+
+
+		imshow(windowName,img1);
+		imshow("Original",img);
+
+		return;
+}
+
+int main(int argc, char** argv) {
+
+
+ if (img.empty()) {
+  	cout << "Could not open or find the image" << endl;
+  	cin.get(); //wait for any key press
+  	return -1;
+ }
+
+	windowName = "Contrast"; //Name of the window
+
+ 	namedWindow(windowName,WINDOW_NORMAL);
+ 	namedWindow("Original",WINDOW_NORMAL); // Create a window
+
+ 	createTrackbar( "Contrast", windowName , &a , 100 , tkbfn );
+ 	createTrackbar( "Brightness", windowName , &b , 100 , tkbfn );
+
+	waitKey(0); // Wait for any keystroke in the window
+
+ 	destroyWindow(windowName); //destroy the created window
+
+ return 0;
+}
+
+----------------------------------------------------------------------------
+
+6)Making a Histogram for a coloured Image ..Seperate for each colour and the histogram contains Pixel Density at eact intensity.
+
+Eg)--------------------------CODE-----------------------------------------
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+int main()
+{
+    Mat image = imread("IMAGE PATH",1);
+
+    // allcoate memory for no of pixels for each intensity value
+    int histr[256];
+    int histg[256];
+    int histb[256];
+
+    // initialize all intensity values to 0
+    for(int i = 0; i < 255; i++)
+    {
+        histr[i] = 0;
+        histg[i] = 0;
+        histb[i] = 0;
+    }
+
+    // calculate the no of pixels for each intensity values
+    for(int y = 0; y < image.rows; y++)
+        for(int x = 0; x < image.cols; x++) {
+            histr[(int)image.at<Vec3b>(y,x)[2]]++;
+            histg[(int)image.at<Vec3b>(y,x)[1]]++;
+            histb[(int)image.at<Vec3b>(y,x)[0]]++;
+        
+        }
+
+    // draw the histograms
+    int hist_w = 512; int hist_h = 500;
+    int bin_w = cvRound((double) hist_w/256);
+
+    Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
+
+    // find the maximum intensity element from histogram
+    int max = histr[0];
+    for(int i = 1; i < 256; i++){
+        if(max < histr[i]){
+            max = histr[i];
+        }
+    }
+    for(int i = 0; i < 256; i++){
+        if(max < histg[i]){
+            max = histg[i];
+        }
+    }
+    for(int i = 0; i < 256; i++){
+        if(max < histb[i]){
+            max = histb[i];
+        }
+    }
+
+    // normalize the histogram between 0 and histImage.rows
+
+    for(int i = 0; i < 255; i++){
+        histr[i] = ((double)histr[i]/max)*histImage.rows;
+
+        histg[i] = ((double)histg[i]/max)*histImage.rows;
+
+
+        histb[i] = ((double)histb[i]/max)*histImage.rows;
+    }
+
+
+    // draw the intensity line for histogram
+    for(int i = 0; i < 255; i++)
+    {
+        line(histImage, Point(bin_w*(i), hist_h),
+                              Point(bin_w*(i), hist_h - histr[i]),
+             Scalar(0,0,255), 1, 8, 0);
+    }
+    for(int i = 0; i < 255; i++)
+    {
+        line(histImage, Point(bin_w*(i), hist_h),
+                              Point(bin_w*(i), hist_h - histb[i]),
+             Scalar(0,255,0), 1, 8, 0);
+    }
+
+    for(int i = 0; i < 255; i++)
+    {
+        line(histImage, Point(bin_w*(i), hist_h),
+                              Point(bin_w*(i), hist_h - histg[i]),
+             Scalar(255,0,0), 1, 8, 0);
+    }
+
+
+    // display histogram
+    namedWindow("Intensity Histogram", WINDOW_NORMAL);
+    imshow("Intensity Histogram", histImage);
+
+    namedWindow("Image",  WINDOW_NORMAL);
+    imshow("Image", image);
+    waitKey();
+    return 0;
+}
+--------------------------------------------------------------------------
+
+7) Rotate a given image using basic Trignometric Formulae for vector rotation
+Angle Throuch TrackBar
+
+Eg)-------------------------CODE------------------------------------------
+
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+Mat img=imread("IMAGE PATH",1);
+
+Mat	img1(img.rows,img.cols,CV_8UC3, Scalar(0,0,0));
+
+int angle;
+ const float pi=3.14;
+
+String windowName;
+
+void tkbfn(int , void*) {
+		int x,y;
+
+		for (int i=0; i<img.cols ; i++){
+			 for (int j=0 ; j<img.rows ; j++)
+			 {
+			   //x'=(x-p)Cos(ϴ')-(y-q)Sin(ϴ')+p
+			   x=(int)((i-img.cols/2)*cos((float)angle*pi/180)-(j-img.rows/2)*sin((float)angle*pi/180)+img.cols/2);
+			   //y'=(y-q)Cos(ϴ')+(x-p)Sin(ϴ')+q
+			   y=(int)((i-img.cols/2)*sin((float)angle*pi/180)+(j-img.rows/2)*cos((float)angle*pi/180)+img.rows/2);
+ 
+   			   if((x>=0 && x<img.cols) && (y>=0 && y<img.rows)) {
+   			   		img1.at<Vec3b>(y,x)=img.at<Vec3b>(j,i);
+   			   	}
+   			 }
+   	     }
+
+
+
+
+		imshow(windowName,img1);
+		imshow("Original",img);
+
+		return;
+}
+
+int main(int argc, char** argv) {
+
+
+ if (img.empty()) {
+  	cout << "Could not open or find the image" << endl;
+  	cin.get(); //wait for any key press
+  	return -1;
+ }
+
+	windowName = "RotatedImage"; //Name of the window
+
+ 	namedWindow(windowName,WINDOW_NORMAL);
+ 	namedWindow("Original",WINDOW_NORMAL); // Create a window
+
+ 	createTrackbar( "Angle", windowName , &angle , 360 , tkbfn );
+
+	waitKey(0); // Wait for any keystroke in the window
+
+ 	destroyWindow(windowName); //destroy the created window
+
+ return 0;
+}
+------------------------------------------------------------------------
+
+8) Morphing 2 Images using the index for each image from TrackBar
+
+Eg)-----------------------CODE-------------------------------------------
+
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include "opencv2/imgcodecs.hpp"
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+Mat img1=imread("Image Path 1",1);
+Mat img2=imread("Image Path 2",1);
+
+Mat Nimg1,Nimg2;
+
+Mat	img3(220,180,CV_8UC3, Scalar(0,0,0));
+
+int t;
+
+String windowName3;
+
+void tkbfn(int , void*) {
+		
+
+		addWeighted( Nimg1 , (float)(100-t)/100 , Nimg2, (float)t/100 , 0.0, img3);
+
+		imshow(windowName3,img3);
+
+		return;
+}
+
+
+
+
+int main(int argc, char** argv)
+{
+
+ if (img1.empty() || img2.empty()) 
+ {
+  cout << "Could not open or find the image" << endl;
+  cin.get(); //wait for any key press
+  return -1;
+ }
+
+ windowName3 = "Club";
+
+ resize(img1,Nimg1,Size(500,500));
+ resize(img2,Nimg2,Size(500,500));
+
+
+ namedWindow(windowName3,WINDOW_NORMAL);
+
+createTrackbar( "Index", windowName3 , &t , 100 , tkbfn );
+
+ waitKey(0); // Wait for any keystroke in the window
+
+  destroyWindow(windowName3); //destroy the created window
+
+ return 0;
+}
+------------------------------------------------------------------------------
+
+
+--------------------------------END--------------------------------------------
