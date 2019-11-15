@@ -1,0 +1,8 @@
+#goal definition
+float64 initial_guess
+---
+#result definition
+float64 estimated_root
+---
+#feedback
+float64[] estimation_sequence

@@ -1,0 +1,8 @@
+#goal definition
+float64 x
+---
+#result definition
+float64 h
+---
+#feedback
+float64 h

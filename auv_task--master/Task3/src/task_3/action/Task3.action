@@ -1,0 +1,22 @@
+#goal definition
+
+float32 frame_center_x
+float32 frame_center_y
+float32 KF_center_x
+float32 KF_center_y
+
+
+---
+
+
+#result definition
+
+string motion
+
+
+---
+
+
+#feedback
+
+string[] motion_sequence
